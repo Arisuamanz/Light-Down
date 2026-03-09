@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Light It Up - Enhanced Run</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div id="main-menu" class="interactive-ui absolute inset-0 flex items-center justify-center bg-black/75 backdrop-blur-sm">
+            <div class="menu-card rounded-2xl px-8 py-7 w-[min(88vw,430px)]">
+                <h1 class="neon-title text-5xl font-extrabold text-center leading-tight">LIGHT IT UP</h1>
+                <p class="text-center text-slate-200/85 text-sm mt-3">Dash, bounce, and light every platform in one clean run.</p>
+                <div class="flex flex-wrap gap-2 mt-5 text-xs text-slate-100/90">
+                    <span class="stat-chip rounded-full px-3 py-1">Tap Left/Right to jump</span>
+                    <span class="stat-chip rounded-full px-3 py-1">Red blocks = instant fail</span>
+                    <span class="stat-chip rounded-full px-3 py-1">Keep combo for score</span>
+                </div>
+                <div class="mt-5 text-xs text-cyan-100/85">
+                    <p>Best Level: <span id="menu-best-level" class="font-semibold">1</span></p>
+                    <p>Best Score: <span id="menu-best-score" class="font-semibold">0</span></p>
+                </div>
+                <button id="start-btn" class="neon-button w-full mt-6 rounded-xl py-3 text-lg font-bold tracking-wide uppercase">Start Run</button>
+            </div>
+        </div>
+
+        <div id="game-over-menu" class="interactive-ui absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+            <div class="menu-card rounded-2xl px-8 py-7 w-[min(88vw,430px)] border-red-400/40">
+                <h2 class="text-4xl font-extrabold text-center text-red-400" style="text-shadow: 0 0 12px rgba(255, 42, 69, 0.9);">RUN ENDED</h2>
+                <div class="mt-5 text-center space-y-2">
+                    <p id="final-level" class="text-lg text-white/92">Reached Level: 1</p>
+                    <p id="final-score" class="text-lg text-cyan-200">Score: 0</p>
+                    <p id="final-combo" class="text-sm text-yellow-300/90">Best Combo: x0</p>
+                </div>
+                <button id="restart-btn" class="neon-button w-full mt-6 rounded-xl py-3 text-lg font-bold tracking-wide uppercase">Retry Level</button>
+            </div>
+        </div>
+
+        <div id="level-complete-menu" class="interactive-ui absolute inset-0 flex items-center justify-center bg-black/78 backdrop-blur-sm hidden">
+            <div class="menu-card rounded-2xl px-8 py-7 w-[min(88vw,430px)] border-lime-400/40">
+                <h2 class="text-4xl font-extrabold text-center text-lime-300" style="text-shadow: 0 0 12px rgba(141, 255, 55, 0.95);">LEVEL CLEAR</h2>
+                <p id="level-summary" class="text-center text-cyan-100/95 mt-4">Perfect route.</p>
+                <button id="next-level-btn" class="neon-button w-full mt-6 rounded-xl py-3 text-lg font-bold tracking-wide uppercase">Next Level</button>
+            </div>
+        </div>
+
+        <div id="hud" class="absolute top-4 left-1/2 -translate-x-1/2 w-[min(94vw,430px)] hidden">
+            <div class="hud-panel">
+                <div class="hud-row">
+                    <p>Level <span id="hud-level" class="font-bold">1</span></p>
+                    <p>Best <span id="hud-best-level" class="font-bold">1</span></p>
+                </div>
+                <div class="hud-row mt-1">
+                    <p>Score <span id="hud-score" class="font-bold text-cyan-200">0</span></p>
+                    <p id="hud-combo" class="text-yellow-300/95">Combo x0</p>
+                </div>
+                <div class="progress-track">
+                    <div id="hud-progress" class="progress-fill"></div>
+                </div>
+                <p class="text-xs text-cyan-100/85 mt-2">Lit: <span id="hud-lit" class="font-semibold">0/0</span></p>
+            </div>
+        </div>
+
+        <button id="sound-btn" class="interactive-ui sound-btn">Sound: On</button>
+    </div>
+
+    <script src="./game.js"></script>
+</body>
+</html>
