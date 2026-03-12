@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Light It Up - Fixed Spawns</title>
+    <title>Light It Up - High Stage Update</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html {
@@ -38,7 +38,7 @@
         .interactive-ui { pointer-events: auto; }
         .neon-text {
             color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #0ff, 0 0 40px #0ff, 0 0 80px #0ff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #0ff, 0 0 40px #0ff;
         }
         .neon-button {
             background: transparent;
@@ -63,29 +63,52 @@
         <!-- Main Menu -->
         <div id="main-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm">
             <h1 class="text-5xl font-bold mb-2 neon-text text-center tracking-wider">LIGHT IT<br>UP</h1>
-            <p class="text-gray-300 mb-6 text-center text-sm px-6">
-                Tap Left/Right to Jump<br>Bounce off walls!<br>Avoid <span class="text-red-500 font-bold">RED</span> hazards.
+            
+            <!-- High Stage Display -->
+            <div class="mb-6 text-cyan-300 font-bold tracking-widest text-lg opacity-90">
+                BEST STAGE: <span id="best-stage-ui">1</span>
+            </div>
+
+            <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-8 text-center">
+                <h2 class="text-cyan-400 font-bold mb-2 uppercase tracking-widest text-sm">How to Play</h2>
+                <p class="text-gray-300 text-sm mb-1">• Tap Left / Right to jump</p>
+                <p class="text-gray-300 text-sm mb-1">• Jumping costs 5 Energy</p>
+                <p class="text-gray-300 text-sm mb-1">• Light all shapes to win</p>
+                <p class="text-red-400 text-sm font-bold">• Avoid Red Spikes</p>
+            </div>
+
+            <button id="start-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase">Start Game</button>
+        </div>
+
+        <!-- Stage Failed Menu -->
+        <div id="stage-failed-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
+            <h2 class="text-5xl font-bold mb-4 text-orange-500" style="text-shadow: 0 0 10px orange, 0 0 20px orange;">WASTED</h2>
+            <p id="failed-score-text" class="text-white text-xl mb-8">Reached Stage: 1</p>
+            <!-- Label ditukar kepada Restart -->
+            <button id="home-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #f90; box-shadow: 0 0 10px #f90;">Restart</button>
+        </div>
+
+        <!-- Stage Complete Menu -->
+        <div id="stage-complete-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
+            <h2 class="text-4xl font-bold mb-4 text-green-400" style="text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;">STAGE CLEARED!</h2>
+            <button id="next-stage-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #0f0; box-shadow: 0 0 10px #0f0;">Next Stage</button>
+        </div>
+
+        <!-- HUD Top -->
+        <div id="hud" class="absolute top-6 left-0 w-full hidden">
+            <p class="absolute left-6 top-0 text-white text-xs font-bold opacity-70">
+                LIT: <br><span id="hud-lit" class="text-base text-cyan-400">0/0</span>
             </p>
-            <button id="start-btn" class="neon-button px-10 py-4 rounded-full text-xl font-bold tracking-widest uppercase">Play Now</button>
-        </div>
-
-        <!-- Game Over Menu -->
-        <div id="game-over-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
-            <h2 class="text-4xl font-bold mb-4 text-red-500" style="text-shadow: 0 0 10px red, 0 0 20px red;">WASTED</h2>
-            <p id="score-text" class="text-white text-xl mb-8">Level: 1</p>
-            <button id="restart-btn" class="neon-button px-10 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #f0f; box-shadow: 0 0 10px #f0f, inset 0 0 10px #f0f;">Try Again</button>
-        </div>
-
-        <!-- Level Complete Menu -->
-        <div id="level-complete-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
-            <h2 class="text-4xl font-bold mb-4 text-green-400" style="text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;">LEVEL CLEARED!</h2>
-            <button id="next-level-btn" class="neon-button px-10 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #0f0; box-shadow: 0 0 10px #0f0, inset 0 0 10px #0f0;">Next Level</button>
-        </div>
-
-        <!-- HUD -->
-        <div id="hud" class="absolute top-4 left-6 w-full hidden">
-            <p class="text-white text-xl font-bold opacity-80" style="text-shadow: 0 0 5px white;">Level: <span id="hud-level">1</span></p>
-            <p class="text-white text-sm opacity-60">Lit: <span id="hud-lit">0/0</span></p>
+            
+            <div class="absolute left-1/2 -translate-x-1/2 top-0 flex flex-col items-center">
+                <p class="text-white text-2xl font-bold neon-text tracking-widest mb-1">
+                    STAGE <span id="hud-stage">1</span>
+                </p>
+                
+                <div class="w-32 h-3 bg-gray-900 rounded-full border border-white/30 overflow-hidden relative">
+                    <div id="energy-bar-fill" class="h-full bg-cyan-400 transition-all duration-75" style="width: 100%;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -93,33 +116,38 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Referensi UI
         const menus = {
             main: document.getElementById('main-menu'),
-            over: document.getElementById('game-over-menu'),
-            complete: document.getElementById('level-complete-menu'),
+            failed: document.getElementById('stage-failed-menu'),
+            complete: document.getElementById('stage-complete-menu'),
             hud: document.getElementById('hud')
         };
         const hudVars = {
-            level: document.getElementById('hud-level'),
-            lit: document.getElementById('hud-lit')
+            stage: document.getElementById('hud-stage'),
+            lit: document.getElementById('hud-lit'),
+            energyBar: document.getElementById('energy-bar-fill'),
+            bestStage: document.getElementById('best-stage-ui')
         };
         
-        // Status Permainan
         let gameState = 'MENU';
         let lastTime = 0;
-        let globalTime = 0; // Digunakan untuk animasi gelombang sine (sine waves)
-        let level = 1;
+        let globalTime = 0;
+        let stage = 1;
+        let highStage = localStorage.getItem('lightItUp_highStage') || 1;
         let litCount = 0;
         let shakeTime = 0;
         let shakeMagnitude = 0;
 
-        // Pemalar (Constants)
+        const MAX_ENERGY = 30;
+        const JUMP_COST = 5;
+        const ENERGY_REGEN_PER_SEC = 3; 
+        let currentEnergy = MAX_ENERGY;
+
         const colors = ['#00FFCC', '#CC00FF', '#FFFF00', '#00FF33', '#FF6600', '#0088FF'];
         const GRAVITY = 1600;
         const TERMINAL_VELOCITY = 1200;
         const JUMP_FORCE_Y = -750;
-        const JUMP_FORCE_X = 400;
+        const JUMP_FORCE_X = 180; 
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -128,10 +156,18 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Fungsi Gegaran Skrin
         function triggerShake(duration, magnitude) {
             shakeTime = duration;
             shakeMagnitude = magnitude;
+        }
+
+        // Simpan High Stage
+        function updateHighStage() {
+            if (stage > highStage) {
+                highStage = stage;
+                localStorage.setItem('lightItUp_highStage', highStage);
+            }
+            hudVars.bestStage.innerText = highStage;
         }
 
         class Player {
@@ -143,466 +179,303 @@
             reset() {
                 this.x = canvas.width / 2;
                 this.y = 80;
+                this.prevX = this.x;
+                this.prevY = this.y;
                 this.vx = 0;
                 this.vy = 0;
                 this.isGrounded = false;
-                this.jumpsLeft = 2;
+                this.currentPlatform = null;
                 this.rotation = 0;
                 this.trail = [];
             }
 
             jump(direction) {
-                if (this.jumpsLeft > 0) {
+                if (currentEnergy >= JUMP_COST) {
+                    currentEnergy -= JUMP_COST;
+                    updateHUD();
                     this.vy = JUMP_FORCE_Y;
-                    this.vx = JUMP_FORCE_X * direction;
-                    this.jumpsLeft--;
+                    this.vx = JUMP_FORCE_X * direction; 
                     this.isGrounded = false;
-                    
-                    for(let i=0; i<8; i++) {
-                        particles.push(new Particle(this.x, this.y, '#ffffff', 2.5));
-                    }
+                    this.currentPlatform = null; 
+                    for(let i=0; i<3; i++) particles.push(new Particle(this.x, this.y, '#ffffff', 2));
+                } else {
+                    triggerShake(0.05, 3);
                 }
             }
 
             update(dt) {
-                this.vy += GRAVITY * dt;
-                if (this.vy > TERMINAL_VELOCITY) this.vy = TERMINAL_VELOCITY;
-
-                this.x += this.vx * dt;
-                this.y += this.vy * dt;
-
-                // Lantunan Dinding (Wall Bouncing)
+                this.prevX = this.x;
+                this.prevY = this.y;
+                if (!this.isGrounded) {
+                    this.vy += GRAVITY * dt;
+                    if (this.vy > TERMINAL_VELOCITY) this.vy = TERMINAL_VELOCITY;
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    this.rotation += this.vx * dt * 0.02;
+                } else {
+                    this.vy = 0; this.vx = 0; 
+                    if (this.currentPlatform) {
+                        this.x += this.currentPlatform.dx;
+                        this.y = this.currentPlatform.y - this.size / 2;
+                        if (this.x + this.size/2 < this.currentPlatform.x || this.x - this.size/2 > this.currentPlatform.x + this.currentPlatform.w) {
+                            this.isGrounded = false; this.currentPlatform = null;
+                        }
+                    }
+                }
                 if (this.x < this.size/2) {
-                    this.x = this.size/2;
-                    this.vx = Math.abs(this.vx) * 0.8;
-                    triggerShake(0.1, 2);
+                    this.x = this.size/2; if (!this.isGrounded) this.vx = Math.abs(this.vx) * 0.7;
+                    triggerShake(0.05, 2);
                 } else if (this.x > canvas.width - this.size/2) {
-                    this.x = canvas.width - this.size/2;
-                    this.vx = -Math.abs(this.vx) * 0.8;
-                    triggerShake(0.1, 2);
+                    this.x = canvas.width - this.size/2; if (!this.isGrounded) this.vx = -Math.abs(this.vx) * 0.7;
+                    triggerShake(0.05, 2);
                 }
-
-                // Mati jika jatuh ke bawah
-                if (this.y > canvas.height + 50) {
-                    setGameOver();
+                if (this.y > canvas.height + 50) handleFail();
+                if (!this.isGrounded) {
+                    this.trail.push({x: this.x, y: this.y});
+                    if (this.trail.length > 10) this.trail.shift();
+                } else {
+                    if (this.trail.length > 0) this.trail.shift();
                 }
-
-                this.rotation += this.vx * dt * 0.02;
-
-                // Kemas kini jejak pemain (Trail)
-                this.trail.push({x: this.x, y: this.y});
-                if (this.trail.length > 15) this.trail.shift();
             }
 
             draw(ctx) {
                 if (this.trail.length > 1) {
                     ctx.beginPath();
                     ctx.moveTo(this.trail[0].x, this.trail[0].y);
-                    for(let i=1; i<this.trail.length; i++) {
-                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
-                    }
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = this.size;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#ffffff';
-                    ctx.stroke();
+                    for(let i=1; i<this.trail.length; i++) ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = this.size * 0.8; ctx.stroke();
                 }
-
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#ffffff';
-                ctx.fillStyle = '#ffffff';
-                
-                ctx.beginPath();
-                ctx.arc(0, -this.size, this.size/2, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation);
+                ctx.shadowBlur = 15; ctx.shadowColor = '#ffffff'; ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(0, -this.size, this.size/2, 0, Math.PI * 2); ctx.fill();
                 ctx.fillRect(-this.size/4, -this.size/2, this.size/2, this.size);
-                
                 ctx.restore();
             }
         }
 
         class Platform {
-            constructor(x, y, w, h, color, type = 'static', hazard = false) {
-                this.startX = x;
-                this.startY = y;
-                this.x = x;
-                this.y = y;
-                this.w = w;
-                this.h = h;
-                this.color = hazard ? '#FF0000' : color;
-                this.isLit = false;
-                this.targetGlow = 0;
-                this.currentGlow = 0;
-                
-                this.type = type; 
-                this.isHazard = hazard; 
-                this.offset = Math.random() * Math.PI * 2; 
-                
-                this.speed = 1.5 + (Math.random() * 1);
-                this.range = 50 + (Math.random() * 30);
+            constructor(x, y, w, h, color, shape = 'rect_h', type = 'static', isHazard = false) {
+                this.startX = x; this.startY = y; this.x = x; this.y = y;
+                this.prevX = x; this.prevY = y; this.dx = 0; this.dy = 0;
+                this.w = w; this.h = h; this.shape = shape; this.color = isHazard ? '#FF0000' : color;
+                this.isLit = false; this.isHazard = isHazard;
+                this.targetGlow = 0; this.currentGlow = 0;
+                this.type = type; this.offset = Math.random() * Math.PI * 2;
+                this.speed = 1.2; this.range = 50;
             }
-
             lightUp() {
                 if (!this.isLit && !this.isHazard) {
-                    this.isLit = true;
-                    this.targetGlow = 30;
-                    litCount++;
-                    updateHUD();
-                    triggerShake(0.15, 4); 
-                    
-                    for(let i=0; i<25; i++) {
-                        particles.push(new Particle(this.x + this.w/2, this.y, this.color, 4));
-                    }
-
-                    if (litCount >= targetLitCount) {
-                        setTimeout(() => setLevelComplete(), 500);
-                    }
+                    this.isLit = true; this.targetGlow = 25; litCount++; updateHUD(); triggerShake(0.1, 3);
+                    for(let i=0; i<8; i++) particles.push(new Particle(this.x + this.w/2, this.y, this.color, 3));
+                    if (litCount >= targetLitCount) setTimeout(setStageComplete, 400);
                 }
             }
-
             update(dt, gTime) {
-                if (this.type === 'horizontal') {
-                    this.x = this.startX + Math.sin(gTime * this.speed + this.offset) * this.range;
-                } else if (this.type === 'vertical') {
-                    this.y = this.startY + Math.sin(gTime * this.speed + this.offset) * this.range;
-                }
-
-                this.currentGlow += (this.targetGlow - this.currentGlow) * 10 * dt;
+                this.prevX = this.x; this.prevY = this.y;
+                if (this.type === 'horizontal') this.x = this.startX + Math.sin(gTime * this.speed + this.offset) * this.range;
+                this.dx = this.x - this.prevX;
+                this.currentGlow += (this.targetGlow - this.currentGlow) * 8 * dt;
             }
-
+            drawPath(ctx) {
+                ctx.beginPath();
+                if (this.shape === 'triangle') {
+                    ctx.moveTo(0, 0); ctx.lineTo(this.w, 0); ctx.lineTo(this.w/2, this.h); ctx.closePath();
+                } else { ctx.rect(0, 0, this.w, this.h); }
+            }
             draw(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                
+                ctx.save(); ctx.translate(this.x, this.y);
                 if (this.isHazard) {
-                    let pulse = 15 + Math.sin(globalTime * 5) * 10;
-                    ctx.shadowBlur = pulse;
-                    ctx.shadowColor = '#FF0000';
-                    ctx.strokeStyle = '#FF0000';
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
-                    ctx.lineWidth = 3;
-                    
+                    let pulse = 10 + Math.sin(globalTime * 6) * 8;
+                    ctx.shadowBlur = pulse; ctx.shadowColor = '#FF0000'; ctx.strokeStyle = '#FF0000';
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; ctx.lineWidth = 3;
+                    this.drawPath(ctx); ctx.fill(); ctx.stroke();
                     ctx.beginPath();
-                    ctx.rect(0, 0, this.w, this.h);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.moveTo(0, this.h);
-                    for(let i=10; i<this.w; i+=10) {
-                        ctx.lineTo(i - 5, 0);
-                        ctx.lineTo(i, this.h);
-                    }
-                    ctx.stroke();
-
-                } else if (this.isLit) {
-                    ctx.shadowBlur = this.currentGlow;
-                    ctx.shadowColor = this.color;
-                    ctx.strokeStyle = this.color;
-                    ctx.fillStyle = this.color + '33';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.rect(0, 0, this.w, this.h);
-                    ctx.fill();
+                    for(let i=0; i<this.w; i+=10) { ctx.moveTo(i, 0); ctx.lineTo(i+5, -8); ctx.lineTo(i+10, 0); }
                     ctx.stroke();
                 } else {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = 2;
-                    ctx.shadowBlur = 0;
-                    ctx.beginPath();
-                    ctx.rect(0, 0, this.w, this.h);
-                    ctx.stroke();
+                    ctx.shadowBlur = this.isLit ? this.currentGlow : 0; ctx.shadowColor = this.color;
+                    ctx.strokeStyle = this.isLit ? this.color : 'rgba(255, 255, 255, 0.3)';
+                    ctx.fillStyle = this.isLit ? this.color + '33' : 'transparent'; ctx.lineWidth = 2.5;
+                    this.drawPath(ctx); if (this.isLit) ctx.fill(); ctx.stroke();
                 }
-                
                 ctx.restore();
             }
         }
 
         class Particle {
-            constructor(x, y, color, speedMultiplier) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
+            constructor(x, y, color, speed) {
+                this.x = x; this.y = y; this.color = color;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = (Math.random() * 200 + 50) * speedMultiplier;
-                this.vx = Math.cos(angle) * speed;
-                this.vy = Math.sin(angle) * speed;
-                this.life = 1.0;
-                this.decay = Math.random() * 1.5 + 0.5;
-                this.size = Math.random() * 4 + 2;
+                const spd = (Math.random() * 150 + 50) * speed;
+                this.vx = Math.cos(angle) * spd; this.vy = Math.sin(angle) * spd;
+                this.life = 1.0; this.decay = 2.0; this.size = Math.random() * 3 + 1;
             }
-
-            update(dt) {
-                this.x += this.vx * dt;
-                this.y += this.vy * dt;
-                this.life -= this.decay * dt;
-            }
-
+            update(dt) { this.x += this.vx * dt; this.y += this.vy * dt; this.life -= this.decay * dt; }
             draw(ctx) {
                 if (this.life <= 0) return;
-                ctx.save();
-                ctx.globalAlpha = this.life;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = this.color;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
             }
         }
 
-        // Pembolehubah Global (Globals)
         let player = new Player();
         let platforms = [];
         let particles = [];
         let targetLitCount = 0;
 
-        function generateLevelData(lvl) {
-            platforms = [];
-            litCount = 0;
-            targetLitCount = 0;
-            const w = canvas.width;
-            const h = canvas.height;
-            
-            // Platform permulaan yang selamat di bawah pemain
-            platforms.push(new Platform(w/2 - 40, 150, 80, 20, colors[0]));
-            targetLitCount++;
-
-            // Hadkan maksimum kotak berdasarkan ruang canvas (10 maksimum untuk elak padat)
-            const numPlatforms = Math.min(4 + lvl * 1, 10); 
-            
-            // Ruang diagihkan dari posisi y=220 hingga y terbawah
-            const startY = 220;
-            const endY = h - 50;
-            const availableHeight = endY - startY;
-            const sectionHeight = availableHeight / numPlatforms;
-            
-            for (let i = 0; i < numPlatforms; i++) {
-                let pw, ph, px, py;
-                let overlapping;
-                let attempts = 0;
-                
-                do {
-                    overlapping = false;
-                    pw = Math.random() * 40 + 30; // Kurangkan sedikit saiz lebar
-                    ph = Math.random() * 30 + 30; // Kurangkan sedikit saiz tinggi
-                    
-                    // Jauhkan dari sempadan dinding
-                    px = Math.random() * (w - pw - 60) + 30; 
-                    
-                    // Pembahagian Y (Ketinggian) supaya tersusun dari atas ke bawah
-                    let baseSectionY = startY + (i * sectionHeight);
-                    py = baseSectionY + Math.random() * (sectionHeight - ph);
-                    
-                    // Pastikan ia tidak terkeluar dari skrin
-                    if (py > endY - ph) py = endY - ph;
-                    if (py < startY) py = startY;
-
-                    // SEMAKAN PERTINDIHAN (Collision check semasa spawn)
-                    for (let p of platforms) {
-                        // Tambah padding 30px supaya kotak tidak melekat
-                        if (px < p.x + p.w + 30 &&
-                            px + pw + 30 > p.x &&
-                            py < p.y + p.h + 30 &&
-                            py + ph + 30 > p.y) {
-                            overlapping = true;
-                            break; // Loop dibatalkan, cuba koordinat lain
-                        }
+        function spawnSafePlatform(w, h, startY, endY, isHazard) {
+            let px, py, pw, ph, shape;
+            let overlapping, attempts = 0;
+            const shapes = ['square', 'rect_h', 'triangle'];
+            shape = shapes[Math.floor(Math.random() * 3)];
+            pw = (shape === 'rect_h') ? 80 : 50; ph = 40;
+            do {
+                overlapping = false;
+                px = Math.random() * (w - pw - 60) + 30;
+                py = startY + Math.random() * (endY - startY - ph);
+                for (let p of platforms) {
+                    if (px < p.x + p.w + 35 && px + pw + 35 > p.x && py < p.y + p.h + 35 && py + ph + 35 > p.y) {
+                        overlapping = true; break;
                     }
-                    attempts++;
-                } while (overlapping && attempts < 50); // Maksimum 50 cubaan supaya tidak infinite loop
+                }
+                attempts++;
+            } while (overlapping && attempts < 30);
+            if (overlapping) return null;
+            return new Platform(px, py, pw, ph, colors[Math.floor(Math.random()*colors.length)], shape, (stage > 2 && Math.random() < 0.3) ? 'horizontal' : 'static', isHazard);
+        }
 
-                // Jika tiada ruang kosong selepas 50 percubaan, abaikan platform ini
-                if (overlapping) continue;
-
-                let color = colors[Math.floor(Math.random() * colors.length)];
-                
-                let type = 'static';
-                let isHazard = false;
-
-                if (lvl > 1 && Math.random() < 0.3) type = 'horizontal';
-                if (lvl > 2 && Math.random() < 0.3 && type === 'static') type = 'vertical';
-                if (lvl > 3 && Math.random() < 0.2 && type === 'static') isHazard = true;
-
-                platforms.push(new Platform(px, py, pw, ph, color, type, isHazard));
-                if (!isHazard) targetLitCount++;
+        function generateStageData(s) {
+            platforms = []; litCount = 0; targetLitCount = 0;
+            const w = canvas.width; const h = canvas.height;
+            platforms.push(new Platform(w/2 - 40, 150, 80, 20, colors[0], 'rect_h', 'static', false));
+            targetLitCount++;
+            const platTotal = Math.floor((s - 1) / 2) + 3;
+            const extraCount = platTotal - 1; 
+            const hazardCount = (s % 2 === 0) ? 1 : 0;
+            const regionHeight = (h - 250) / (extraCount + hazardCount);
+            for(let i=0; i < extraCount; i++) {
+                let p = spawnSafePlatform(w, h, 200 + i*regionHeight, 200 + (i+1)*regionHeight, false);
+                if(p) { platforms.push(p); targetLitCount++; }
+            }
+            if(hazardCount > 0) {
+                let p = spawnSafePlatform(w, h, 350, h - 150, true);
+                if(p) platforms.push(p);
             }
         }
 
-        function startGame() {
-            level = 1;
-            startLevel();
+        function startGame() { 
+            stage = 1; 
+            startStage(); 
         }
-
-        function startLevel() {
-            generateLevelData(level);
-            player.reset();
-            particles = [];
-            updateHUD();
-            gameState = 'PLAYING';
-            globalTime = 0;
-            
-            menus.main.classList.add('hidden');
-            menus.over.classList.add('hidden');
-            menus.complete.classList.add('hidden');
+        
+        function startStage() {
+            currentEnergy = MAX_ENERGY; 
+            generateStageData(stage); player.reset(); particles = []; updateHUD();
+            gameState = 'PLAYING'; globalTime = 0;
+            Object.values(menus).forEach(m => m.classList.add('hidden'));
             menus.hud.classList.remove('hidden');
-            
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
         }
 
-        function setGameOver() {
-            gameState = 'GAMEOVER';
-            triggerShake(0.5, 10); 
-            
-            for(let i=0; i<40; i++) {
-                particles.push(new Particle(player.x, player.y, '#FF0000', 5));
-            }
-
-            document.getElementById('score-text').innerText = `Reached Level: ${level}`;
-            menus.over.classList.remove('hidden');
-            menus.hud.classList.add('hidden');
+        function handleFail() {
+            gameState = 'FAILED';
+            triggerShake(0.3, 8);
+            updateHighStage(); // Periksa high stage bila kalah
+            for(let i=0; i<15; i++) particles.push(new Particle(player.x, player.y, '#FF0000', 4));
+            setTimeout(() => {
+                document.getElementById('failed-score-text').innerText = `Reached Stage: ${stage}`;
+                menus.hud.classList.add('hidden');
+                menus.failed.classList.remove('hidden');
+            }, 600);
         }
 
-        function setLevelComplete() {
-            gameState = 'LEVEL_COMPLETE';
+        function returnToHome() {
+            updateHighStage();
+            gameState = 'MENU';
+            Object.values(menus).forEach(m => m.classList.add('hidden'));
+            menus.main.classList.remove('hidden');
+        }
+
+        function setStageComplete() {
+            gameState = 'WON';
+            updateHighStage(); // Kemas kini high stage bila menang
             menus.complete.classList.remove('hidden');
-            menus.hud.classList.add('hidden');
         }
 
         function updateHUD() {
-            hudVars.level.innerText = level;
+            hudVars.stage.innerText = stage;
             hudVars.lit.innerText = `${litCount}/${targetLitCount}`;
+            const energyPercent = (currentEnergy / MAX_ENERGY) * 100;
+            hudVars.energyBar.style.width = `${energyPercent}%`;
+            if (currentEnergy < JUMP_COST) {
+                hudVars.energyBar.style.backgroundColor = '#ef4444'; 
+            } else if (currentEnergy < MAX_ENERGY / 2) {
+                hudVars.energyBar.style.backgroundColor = '#facc15'; 
+            } else {
+                hudVars.energyBar.style.backgroundColor = '#22d3ee'; 
+            }
         }
 
         function checkCollisions() {
-            const pBottom = player.y + player.size/2;
-            const pLeft = player.x - player.size/2;
-            const pRight = player.x + player.size/2;
-            const pTop = player.y - player.size;
-
+            const pBox = { l: player.x - player.size/2, r: player.x + player.size/2, t: player.y - player.size, b: player.y + player.size/2 };
             for (let plat of platforms) {
                 if (plat.isHazard) {
-                    if (pRight > plat.x && pLeft < plat.x + plat.w &&
-                        pBottom > plat.y && pTop < plat.y + plat.h) {
-                        setGameOver();
-                        return;
+                    if (pBox.r > plat.x + 5 && pBox.l < plat.x + plat.w - 5 && pBox.b > plat.y && pBox.t < plat.y + plat.h) {
+                        handleFail(); return;
                     }
-                    continue;
-                }
-
-                if (player.vy >= 0 && pRight > plat.x && pLeft < plat.x + plat.w) {
-                    if (pBottom >= plat.y && pBottom - player.vy * 0.1 <= plat.y + 15) {
-                        player.y = plat.y - player.size/2;
-                        player.vy = 0;
-                        player.isGrounded = true;
-                        player.jumpsLeft = 2; 
-                        
-                        if (plat.type === 'horizontal') {
-                            let platVelocity = Math.cos(globalTime * plat.speed + plat.offset) * plat.range * plat.speed;
-                            player.x += platVelocity * 0.016; 
+                } else if (!player.isGrounded && player.vy >= 0) {
+                    if (pBox.r > plat.x && pBox.l < plat.x + plat.w) {
+                        if (player.prevY + player.size/2 <= plat.prevY + 15 && pBox.b >= plat.y - 5) {
+                            player.isGrounded = true; player.currentPlatform = plat;
+                            player.y = plat.y - player.size/2; player.vy = 0; player.vx = 0;
+                            plat.lightUp(); break;
                         }
-
-                        plat.lightUp();
                     }
                 }
             }
         }
 
         function gameLoop(timestamp) {
-            if (gameState !== 'PLAYING' && particles.length === 0) {
-                if(gameState !== 'PLAYING' && gameState !== 'GAMEOVER') return; 
-            }
-
+            if (gameState !== 'PLAYING' && gameState !== 'FAILED' && particles.length === 0) return;
             let dt = (timestamp - lastTime) / 1000;
-            if (dt > 0.1) dt = 0.1; 
-            lastTime = timestamp;
-            globalTime += dt;
-
-            update(dt);
-            draw();
-
-            if (gameState === 'PLAYING' || particles.length > 0) {
+            if (dt > 0.1) dt = 0.1;
+            lastTime = timestamp; globalTime += dt;
+            if (gameState === 'PLAYING') {
+                if (currentEnergy < MAX_ENERGY) {
+                    currentEnergy += ENERGY_REGEN_PER_SEC * dt;
+                    if (currentEnergy > MAX_ENERGY) currentEnergy = MAX_ENERGY;
+                    updateHUD(); 
+                }
+            }
+            platforms.forEach(p => p.update(dt, globalTime));
+            if (gameState === 'PLAYING') { player.update(dt); checkCollisions(); }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+            if (shakeTime > 0) shakeTime -= dt;
+            ctx.save();
+            if (shakeTime > 0) ctx.translate((Math.random()-0.5)*shakeMagnitude, (Math.random()-0.5)*shakeMagnitude);
+            let grad = ctx.createLinearGradient(0,0,0,canvas.height);
+            grad.addColorStop(0, '#050510'); grad.addColorStop(1, '#110b29');
+            ctx.fillStyle = grad; ctx.fillRect(0,0,canvas.width,canvas.height);
+            platforms.forEach(p => p.draw(ctx));
+            particles.forEach(p => p.draw(ctx));
+            if (gameState !== 'FAILED') player.draw(ctx);
+            ctx.restore();
+            if (gameState === 'PLAYING' || gameState === 'FAILED' || particles.length > 0) {
                 requestAnimationFrame(gameLoop);
             }
         }
 
-        function update(dt) {
-            if (gameState === 'PLAYING') {
-                player.update(dt);
-                checkCollisions();
-            }
-            
-            platforms.forEach(p => p.update(dt, globalTime));
-            
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update(dt);
-                if (particles[i].life <= 0) particles.splice(i, 1);
-            }
-
-            if (shakeTime > 0) shakeTime -= dt;
-        }
-
-        function drawBackground() {
-            let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#050510');
-            gradient.addColorStop(1, '#110b29'); 
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-            ctx.lineWidth = 1;
-            const gridSize = 60;
-            ctx.beginPath();
-            for(let x=0; x<canvas.width; x+=gridSize) {
-                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
-            }
-            for(let y=0; y<canvas.height; y+=gridSize) {
-                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
-            }
-            ctx.stroke();
-        }
-
-        function draw() {
-            ctx.save();
-
-            if (shakeTime > 0) {
-                const dx = (Math.random() - 0.5) * shakeMagnitude;
-                const dy = (Math.random() - 0.5) * shakeMagnitude;
-                ctx.translate(dx, dy);
-            }
-
-            drawBackground();
-
-            platforms.forEach(p => p.draw(ctx));
-            particles.forEach(p => p.draw(ctx));
-            
-            if (gameState === 'PLAYING') {
-                player.draw(ctx);
-            }
-
-            ctx.restore();
-        }
-
         function handleInput(clientX) {
             if (gameState !== 'PLAYING') return;
-            const halfWidth = canvas.width / 2;
-            player.jump(clientX < halfWidth ? -1 : 1);
+            player.jump(clientX < canvas.width/2 ? -1 : 1);
         }
 
         window.addEventListener('touchstart', (e) => {
             if(e.target.tagName === 'BUTTON') return;
-            e.preventDefault();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                handleInput(e.changedTouches[i].clientX);
-            }
+            e.preventDefault(); handleInput(e.changedTouches[0].clientX);
         }, { passive: false });
 
         window.addEventListener('mousedown', (e) => {
@@ -610,18 +483,15 @@
             handleInput(e.clientX);
         });
 
+        // Event listeners
         document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('restart-btn').addEventListener('click', startLevel);
-        document.getElementById('next-level-btn').addEventListener('click', () => {
-            level++;
-            startLevel();
-        });
+        document.getElementById('home-btn').addEventListener('click', returnToHome);
+        document.getElementById('next-stage-btn').addEventListener('click', () => { stage++; startStage(); });
 
+        // Initial setup
+        hudVars.bestStage.innerText = highStage;
         resize();
-        drawBackground();
-
     </script>
 </body>
 </html>
-
 
