@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Light It Up - Cozy Audio Update</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050510;
+            touch-action: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .interactive-ui { pointer-events: auto; }
+        .neon-text {
+            color: #fff;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+        }
+        .neon-button {
+            background: transparent;
+            color: white;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 10px #0ff, inset 0 0 10px #0ff;
+            text-shadow: 0 0 5px #fff;
+            transition: all 0.2s;
+        }
+        .neon-button:active {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px #0ff, inset 0 0 20px #0ff;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <!-- Main Menu -->
+        <div id="main-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm">
+            <h1 class="text-5xl font-bold mb-2 neon-text text-center tracking-wider">LIGHT IT<br>UP</h1>
+            
+            <div class="mb-6 text-cyan-300 font-bold tracking-widest text-lg opacity-90">
+                BEST STAGE: <span id="best-stage-ui">1</span>
+            </div>
+
+            <div class="bg-white/5 p-6 rounded-2xl border border-white/10 mb-8 text-center">
+                <h2 class="text-cyan-400 font-bold mb-2 uppercase tracking-widest text-sm text-shadow: 0 0 5px #0ff">How to Play</h2>
+                <p class="text-gray-300 text-sm mb-1">• Tap Left / Right to jump</p>
+                <p class="text-gray-300 text-sm mb-1">• Double jump max (2 jumps)</p>
+                <p class="text-gray-300 text-sm mb-1">• You have 3 Lives</p>
+                <p class="text-green-400 text-sm font-bold">• Light all shapes to win</p>
+            </div>
+
+            <button id="start-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase">Start Game</button>
+        </div>
+
+        <!-- Stage Failed Menu (Try Again - Still have lives) -->
+        <div id="stage-failed-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
+            <h2 class="text-5xl font-bold mb-4 text-orange-500" style="text-shadow: 0 0 10px orange;">WASTED</h2>
+            <p id="failed-lives-text" class="text-white text-xl mb-8">Lives Remaining: 2</p>
+            <button id="retry-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #f90; box-shadow: 0 0 10px #f90;">Try Again</button>
+        </div>
+
+        <!-- Game Over Menu (Restart - 0 Lives) -->
+        <div id="game-over-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
+            <h2 class="text-5xl font-bold mb-4 text-red-600" style="text-shadow: 0 0 10px red, 0 0 20px red;">GAME OVER</h2>
+            <p id="game-over-score-text" class="text-white text-xl mb-8">Reached Stage: 1</p>
+            <button id="restart-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #f00; box-shadow: 0 0 10px #f00;">Restart</button>
+        </div>
+
+        <!-- Stage Complete Menu -->
+        <div id="stage-complete-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
+            <h2 class="text-4xl font-bold mb-4 text-green-400" style="text-shadow: 0 0 10px #0f0;">STAGE CLEARED!</h2>
+            <button id="next-stage-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #0f0; box-shadow: 0 0 10px #0f0;">Next Stage</button>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud" class="absolute top-6 left-0 w-full hidden">
+            <!-- Lit text -->
+            <p class="absolute left-6 top-0 text-white text-xs font-bold opacity-70">
+                LIT: <br><span id="hud-lit" class="text-base text-cyan-400">0/0</span>
+            </p>
+            
+            <!-- Stage text -->
+            <div class="absolute left-1/2 -translate-x-1/2 top-0 flex flex-col items-center">
+                <p class="text-white text-2xl font-bold neon-text tracking-widest mb-1">
+                    STAGE <span id="hud-stage">1</span>
+                </p>
+            </div>
+
+            <!-- Lives text -->
+            <p class="absolute right-6 top-0 text-red-500 text-xl tracking-widest" style="text-shadow: 0 0 10px red;">
+                <span id="hud-lives">♥♥♥</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO SYSTEM (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Master Gain Node
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.value = 10.0; // Master gain dinaikkan kepada 10
+        masterGain.connect(audioCtx.destination);
+        
+        function playTone(freq1, freq2, type, duration, vol=0.1) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.connect(gainNode);
+            gainNode.connect(masterGain);
+            
+            osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+            if(freq2) {
+                osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
+            }
+            
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const SFX = {
+            init: () => {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+            },
+            jump: () => playTone(150, 300, 'sine', 0.15, 0.1),
+            light: () => playTone(880, 1760, 'sine', 0.1, 0.05),
+            // Bunyi fail yang lebih cozy, guna gelombang triangle dan turun perlahan
+            fail: () => playTone(300, 100, 'triangle', 0.6, 0.1),
+            win: () => {
+                playTone(440, 440, 'sine', 0.1, 0.05);
+                setTimeout(() => playTone(554, 554, 'sine', 0.1, 0.05), 100);
+                setTimeout(() => playTone(659, 880, 'sine', 0.2, 0.05), 200);
+            }
+        };
+
+        // --- GAME SYSTEM ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const menus = {
+            main: document.getElementById('main-menu'),
+            failed: document.getElementById('stage-failed-menu'),
+            gameOver: document.getElementById('game-over-menu'),
+            complete: document.getElementById('stage-complete-menu'),
+            hud: document.getElementById('hud')
+        };
+        const hudVars = {
+            stage: document.getElementById('hud-stage'),
+            lit: document.getElementById('hud-lit'),
+            lives: document.getElementById('hud-lives'),
+            bestStage: document.getElementById('best-stage-ui')
+        };
+        
+        let gameState = 'MENU';
+        let lastTime = 0;
+        let globalTime = 0;
+        let stage = 1;
+        let lives = 3;
+        let highStage = localStorage.getItem('lightItUp_highStage') || 1;
+        let litCount = 0;
+        let shakeTime = 0;
+        let shakeMagnitude = 0;
+
+        const colors = ['#00FFCC', '#CC00FF', '#FFFF00', '#00FF33', '#FF6600', '#0088FF'];
+        const GRAVITY = 1600;
+        const TERMINAL_VELOCITY = 1200;
+        const JUMP_FORCE_Y = -750;
+        const JUMP_FORCE_X = 180; 
+
+        let pulses = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function triggerShake(duration, magnitude) {
+            shakeTime = duration;
+            shakeMagnitude = magnitude;
+        }
+
+        function updateHighStage() {
+            if (stage > highStage) {
+                highStage = stage;
+                localStorage.setItem('lightItUp_highStage', highStage);
+            }
+            hudVars.bestStage.innerText = highStage;
+        }
+
+        class Player {
+            constructor() {
+                this.reset();
+                this.size = 12;
+            }
+
+            reset() {
+                this.x = canvas.width / 2;
+                this.y = 100;
+                this.vx = 0;
+                this.vy = 0;
+                this.isGrounded = false;
+                this.currentPlatform = null;
+                this.rotation = 0;
+                this.jumpsLeft = 2;
+            }
+
+            jump(direction) {
+                if (this.jumpsLeft > 0) {
+                    this.jumpsLeft--; 
+                    this.vy = JUMP_FORCE_Y;
+                    this.vx = JUMP_FORCE_X * direction; 
+                    this.isGrounded = false;
+                    this.currentPlatform = null; 
+                    pulses.push({x: this.x, y: this.y, r: 5, alpha: 0.8, color: '#ffffff'});
+                    SFX.jump(); 
+                }
+            }
+
+            update(dt) {
+                if (!this.isGrounded) {
+                    this.vy += GRAVITY * dt;
+                    if (this.vy > TERMINAL_VELOCITY) this.vy = TERMINAL_VELOCITY;
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    this.rotation += this.vx * dt * 0.02;
+                } else if (this.currentPlatform) {
+                    this.vx = 0;
+                    this.vy = 0;
+                    this.x += this.currentPlatform.dx;
+                    this.y = this.currentPlatform.y - this.size / 2;
+                    if (this.x + this.size/2 < this.currentPlatform.x || this.x - this.size/2 > this.currentPlatform.x + this.currentPlatform.w) {
+                        this.isGrounded = false;
+                        this.currentPlatform = null;
+                    }
+                }
+
+                if (this.x < this.size/2) {
+                    this.x = this.size/2;
+                    this.vx = Math.abs(this.vx) * 0.5;
+                } else if (this.x > canvas.width - this.size/2) {
+                    this.x = canvas.width - this.size/2;
+                    this.vx = -Math.abs(this.vx) * 0.5;
+                }
+                
+                if (this.y > canvas.height + 50) handleFail();
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.beginPath();
+                ctx.arc(0, -this.size/2, this.size * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, -this.size, this.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(-this.size/4, -this.size/2, this.size/2, this.size);
+                ctx.restore();
+            }
+        }
+
+        class Platform {
+            constructor(x, y, w, h, color, shape = 'rect_h', type = 'static') {
+                this.startX = x; this.startY = y;
+                this.x = x; this.y = y;
+                this.prevX = x; this.dx = 0;
+                this.w = w; this.h = h;
+                this.shape = shape;
+                this.color = color;
+                this.isLit = false;
+                this.type = type;
+                this.offset = Math.random() * Math.PI * 2;
+            }
+            
+            lightUp() {
+                if (!this.isLit) {
+                    this.isLit = true;
+                    litCount++;
+                    updateHUD();
+                    triggerShake(0.1, 4);
+                    pulses.push({x: this.x + this.w/2, y: this.y + this.h/2, r: 10, alpha: 1, color: this.color});
+                    SFX.light(); 
+                    if (litCount >= targetLitCount) setTimeout(setStageComplete, 400);
+                }
+            }
+            
+            update(dt, gTime) {
+                this.prevX = this.x;
+                if (this.type === 'horizontal') {
+                    this.x = this.startX + Math.sin(gTime * 1.2 + this.offset) * 50;
+                }
+                this.dx = this.x - this.prevX;
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                ctx.strokeStyle = this.isLit ? this.color : 'rgba(255, 255, 255, 0.3)';
+                ctx.fillStyle = this.isLit ? this.color + '44' : 'transparent';
+                ctx.lineWidth = 2.5;
+                this.drawPath(ctx);
+                if (this.isLit) ctx.fill();
+                ctx.stroke();
+                
+                if (this.isLit) {
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.fillStyle = this.color + '11';
+                    ctx.beginPath();
+                    ctx.arc(this.w/2, this.h/2, this.w, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+            
+            drawPath(ctx) {
+                ctx.beginPath();
+                if (this.shape === 'triangle') {
+                    ctx.moveTo(0, 0); ctx.lineTo(this.w, 0); ctx.lineTo(this.w/2, this.h); ctx.closePath();
+                } else { ctx.rect(0, 0, this.w, this.h); }
+            }
+        }
+
+        let player = new Player();
+        let platforms = [];
+        let targetLitCount = 0;
+
+        function spawnSafePlatform(w, h, startY, endY) {
+            let px, py, pw, ph, shape;
+            let overlapping, attempts = 0;
+            const shapes = ['square', 'rect_h', 'triangle'];
+            shape = shapes[Math.floor(Math.random() * 3)];
+            pw = (shape === 'rect_h') ? 80 : 50; ph = 40;
+            do {
+                overlapping = false;
+                px = Math.random() * (w - pw - 60) + 30;
+                py = startY + Math.random() * (endY - startY - ph);
+                for (let p of platforms) {
+                    if (px < p.x + p.w + 40 && px + pw + 40 > p.x && py < p.y + p.h + 40 && py + ph + 40 > p.y) {
+                        overlapping = true; break;
+                    }
+                }
+                attempts++;
+            } while (overlapping && attempts < 30);
+            if (overlapping) return null;
+            return new Platform(px, py, pw, ph, colors[Math.floor(Math.random()*colors.length)], shape, (stage > 2 && Math.random() < 0.3) ? 'horizontal' : 'static');
+        }
+
+        function generateStageData(s) {
+            platforms = []; litCount = 0; targetLitCount = 0;
+            const w = canvas.width; const h = canvas.height;
+            platforms.push(new Platform(w/2 - 40, 150, 80, 20, colors[0], 'rect_h', 'static'));
+            targetLitCount++;
+            
+            const platTotal = s + 2; 
+            const extraCount = platTotal - 1; 
+            const regionHeight = (h - 250) / extraCount;
+            
+            for(let i=0; i < extraCount; i++) {
+                let p = spawnSafePlatform(w, h, 200 + i*regionHeight, 200 + (i+1)*regionHeight);
+                if(p) { platforms.push(p); targetLitCount++; }
+            }
+        }
+
+        function startGame() { 
+            SFX.init();
+            stage = 1; 
+            lives = 3;
+            startStage(); 
+        }
+
+        function startStage() {
+            SFX.init();
+            generateStageData(stage); player.reset(); pulses = []; updateHUD();
+            gameState = 'PLAYING'; globalTime = 0;
+            Object.values(menus).forEach(m => m.classList.add('hidden'));
+            menus.hud.classList.remove('hidden');
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function handleFail() {
+            gameState = 'FAILED';
+            triggerShake(0.3, 10);
+            updateHighStage();
+            pulses.push({x: player.x, y: player.y, r: 10, alpha: 1, color: '#FF0000', explosion: true});
+            SFX.fail(); 
+            
+            lives--; 
+            updateHUD();
+
+            setTimeout(() => {
+                menus.hud.classList.add('hidden');
+                if (lives > 0) {
+                    document.getElementById('failed-lives-text').innerText = `Lives Remaining: ${lives}`;
+                    menus.failed.classList.remove('hidden');
+                } else {
+                    document.getElementById('game-over-score-text').innerText = `Reached Stage: ${stage}`;
+                    menus.gameOver.classList.remove('hidden');
+                }
+            }, 600);
+        }
+
+        function setStageComplete() {
+            gameState = 'WON';
+            updateHighStage();
+            SFX.win(); 
+            menus.complete.classList.remove('hidden');
+        }
+
+        function updateHUD() {
+            hudVars.stage.innerText = stage;
+            hudVars.lit.innerText = `${litCount}/${targetLitCount}`;
+            hudVars.lives.innerText = '♥'.repeat(lives);
+        }
+
+        function checkCollisions() {
+            const pBox = { l: player.x - player.size/2, r: player.x + player.size/2, t: player.y - player.size, b: player.y + player.size/2 };
+            for (let plat of platforms) {
+                if (!player.isGrounded && player.vy >= 0) {
+                    if (pBox.r > plat.x && pBox.l < plat.x + plat.w) {
+                        if (player.y + player.size/2 >= plat.y - 5 && player.y - player.size/2 <= plat.y + 15) {
+                            player.isGrounded = true; 
+                            player.currentPlatform = plat;
+                            player.y = plat.y - player.size/2; 
+                            player.vy = 0; 
+                            player.vx = 0;
+                            player.jumpsLeft = 2;
+                            plat.lightUp(); break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState === 'MENU') return;
+            let dt = (timestamp - lastTime) / 1000;
+            if (dt > 0.1) dt = 0.1;
+            lastTime = timestamp; globalTime += dt;
+
+            if (gameState === 'PLAYING') {
+                player.update(dt);
+                checkCollisions();
+            }
+
+            platforms.forEach(p => p.update(dt, globalTime));
+
+            for (let i = pulses.length - 1; i >= 0; i--) {
+                let p = pulses[i];
+                p.r += dt * (p.explosion ? 400 : 150);
+                p.alpha -= dt * (p.explosion ? 1.5 : 2);
+                if (p.alpha <= 0) pulses.splice(i, 1);
+            }
+
+            if (shakeTime > 0) shakeTime -= dt;
+
+            ctx.save();
+            if (shakeTime > 0) ctx.translate((Math.random()-0.5)*shakeMagnitude, (Math.random()-0.5)*shakeMagnitude);
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for(let x=0; x<canvas.width; x+=50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+            for(let y=0; y<canvas.height; y+=50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+
+            platforms.forEach(p => p.draw(ctx));
+
+            pulses.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.stroke();
+                if (p.explosion) {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.alpha * 0.3;
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            if (gameState !== 'FAILED') player.draw(ctx);
+            ctx.restore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function handleInput(clientX) {
+            if (gameState !== 'PLAYING') return;
+            SFX.init();
+            player.jump(clientX < canvas.width/2 ? -1 : 1);
+        }
+
+        window.addEventListener('touchstart', (e) => {
+            if(e.target.tagName === 'BUTTON') return;
+            e.preventDefault(); handleInput(e.changedTouches[0].clientX);
+        }, { passive: false });
+
+        window.addEventListener('mousedown', (e) => {
+            if(e.target.tagName === 'BUTTON') return;
+            handleInput(e.clientX);
+        });
+
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('retry-btn').addEventListener('click', startStage);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('next-stage-btn').addEventListener('click', () => { stage++; startStage(); });
+
+        hudVars.bestStage.innerText = highStage;
+        resize();
+    </script>
+</body>
+</html>
+
+
