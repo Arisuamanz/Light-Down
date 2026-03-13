@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Light It Up - Cozy Audio Update</title>
+    <title>Light It Up - 3 Lives Per Stage</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html {
@@ -72,21 +72,21 @@
                 <h2 class="text-cyan-400 font-bold mb-2 uppercase tracking-widest text-sm text-shadow: 0 0 5px #0ff">How to Play</h2>
                 <p class="text-gray-300 text-sm mb-1">• Tap Left / Right to jump</p>
                 <p class="text-gray-300 text-sm mb-1">• Double jump max (2 jumps)</p>
-                <p class="text-gray-300 text-sm mb-1">• You have 3 Lives</p>
+                <p class="text-gray-300 text-sm mb-1">• 3 Lives per Stage</p>
                 <p class="text-green-400 text-sm font-bold">• Light all shapes to win</p>
             </div>
 
             <button id="start-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase">Start Game</button>
         </div>
 
-        <!-- Stage Failed Menu (Try Again - Still have lives) -->
+        <!-- Stage Failed Menu -->
         <div id="stage-failed-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
             <h2 class="text-5xl font-bold mb-4 text-orange-500" style="text-shadow: 0 0 10px orange;">WASTED</h2>
             <p id="failed-lives-text" class="text-white text-xl mb-8">Lives Remaining: 2</p>
             <button id="retry-btn" class="neon-button px-12 py-4 rounded-full text-xl font-bold tracking-widest uppercase" style="border-color: #f90; box-shadow: 0 0 10px #f90;">Try Again</button>
         </div>
 
-        <!-- Game Over Menu (Restart - 0 Lives) -->
+        <!-- Game Over Menu -->
         <div id="game-over-menu" class="interactive-ui flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-sm hidden">
             <h2 class="text-5xl font-bold mb-4 text-red-600" style="text-shadow: 0 0 10px red, 0 0 20px red;">GAME OVER</h2>
             <p id="game-over-score-text" class="text-white text-xl mb-8">Reached Stage: 1</p>
@@ -124,9 +124,8 @@
         // --- AUDIO SYSTEM (Web Audio API) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Master Gain Node
         const masterGain = audioCtx.createGain();
-        masterGain.gain.value = 10.0; // Master gain dinaikkan kepada 10
+        masterGain.gain.value = 10.0;
         masterGain.connect(audioCtx.destination);
         
         function playTone(freq1, freq2, type, duration, vol=0.1) {
@@ -155,7 +154,6 @@
             },
             jump: () => playTone(150, 300, 'sine', 0.15, 0.1),
             light: () => playTone(880, 1760, 'sine', 0.1, 0.05),
-            // Bunyi fail yang lebih cozy, guna gelombang triangle dan turun perlahan
             fail: () => playTone(300, 100, 'triangle', 0.6, 0.1),
             win: () => {
                 playTone(440, 440, 'sine', 0.1, 0.05);
@@ -370,7 +368,12 @@
             let overlapping, attempts = 0;
             const shapes = ['square', 'rect_h', 'triangle'];
             shape = shapes[Math.floor(Math.random() * 3)];
-            pw = (shape === 'rect_h') ? 80 : 50; ph = 40;
+            
+            let sizeMultiplier = (stage <= 3) ? 1.5 : 1;
+            
+            pw = ((shape === 'rect_h') ? 80 : 50) * sizeMultiplier;
+            ph = 40 * sizeMultiplier;
+            
             do {
                 overlapping = false;
                 px = Math.random() * (w - pw - 60) + 30;
@@ -382,6 +385,7 @@
                 }
                 attempts++;
             } while (overlapping && attempts < 30);
+            
             if (overlapping) return null;
             return new Platform(px, py, pw, ph, colors[Math.floor(Math.random()*colors.length)], shape, (stage > 2 && Math.random() < 0.3) ? 'horizontal' : 'static');
         }
@@ -389,7 +393,13 @@
         function generateStageData(s) {
             platforms = []; litCount = 0; targetLitCount = 0;
             const w = canvas.width; const h = canvas.height;
-            platforms.push(new Platform(w/2 - 40, 150, 80, 20, colors[0], 'rect_h', 'static'));
+            
+            let sizeMultiplier = (s <= 3) ? 1.5 : 1;
+            let startW = 80 * sizeMultiplier;
+            let startH = 20 * sizeMultiplier;
+            let startX = w/2 - startW/2;
+            
+            platforms.push(new Platform(startX, 150, startW, startH, colors[0], 'rect_h', 'static'));
             targetLitCount++;
             
             const platTotal = s + 2; 
@@ -549,7 +559,13 @@
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('retry-btn').addEventListener('click', startStage);
         document.getElementById('restart-btn').addEventListener('click', startGame);
-        document.getElementById('next-stage-btn').addEventListener('click', () => { stage++; startStage(); });
+        
+        // --- LOGIK RESET NYAWA KE 3 APABILA NAIK STAGE ---
+        document.getElementById('next-stage-btn').addEventListener('click', () => { 
+            stage++; 
+            lives = 3; // Reset nyawa ke 3 untuk stage baru
+            startStage(); 
+        });
 
         hudVars.bestStage.innerText = highStage;
         resize();
